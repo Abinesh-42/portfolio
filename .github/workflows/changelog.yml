@@ -1,0 +1,42 @@
+name: Generate Changelog
+
+on:
+  push:
+    branches:
+      - main   # Run workflow only when code is pushed to main branch
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Set up Ruby (needed for github-changelog-generator)
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+
+      # 3. Install github-changelog-generator
+      - name: Install github-changelog-generator
+        run: gem install github_changelog_generator
+
+      # 4. Generate CHANGELOG.md
+      - name: Generate Changelog
+        run: |
+          github_changelog_generator \
+            --user ${{ github.repository_owner }} \
+            --project ${{ github.event.repository.name }} \
+            --token ${{ secrets.GITHUB_TOKEN }}
+
+      # 5. Commit and push changelog back
+      - name: Commit and Push Changelog
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add CHANGELOG.md
+          git commit -m "docs: update changelog [skip ci]" || echo "No changes to commit"
+          git push
