@@ -1,22 +1,15 @@
-name: PR Changelog
-
+name: Generate Changelog
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
 
 jobs:
   changelog:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Generate changelog from commits
-        run: |
-          echo "### 📝 Changelog" > changelog.txt
-          git log origin/${{ github.base_ref }}..HEAD --pretty=format:"- %s" >> changelog.txt
-
-      - name: Comment changelog on PR
-        uses: peter-evans/create-or-update-comment@v3
+      - uses: actions/checkout@v3
+      - name: Generate Changelog
+        uses: github-changelog-generator/github-changelog-generator@latest
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body-file: changelog.txt
+          token: ${{ secrets.GITHUB_TOKEN }}
